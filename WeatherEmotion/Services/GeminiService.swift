@@ -12,7 +12,7 @@ import Foundation
 class GeminiService {
     // MARK: - Properties
     private let apiKey = "AIzaSyCvOxEnz9ca6mkZHWPs9dMFGBsFMUUuS4U"
-    private let modelName = "gemini-pro" // 또는 gemini-pro
+    private let modelName = "gemini-2.5-flash"
     
     // MARK: - Public Methods
     
@@ -25,24 +25,33 @@ class GeminiService {
         // 1. URL 구성
         let urlString = "https://generativelanguage.googleapis.com/v1beta/models/\(modelName):generateContent?key=\(apiKey)"
         
+        print("🤖 Gemini API 호출 시작")
+        print("   모델: \(modelName)")
+        
         guard let url = URL(string: urlString) else {
             throw URLError(.badURL)
         }
         
-        // 2. 프롬프트 구성
+        // 2. 프롬프트 구성 (JSON 형식 명시)
         let prompt = """
-        Recommend 3 activities for a user who feels '\(emotion.englishDescription)' and the weather is '\(weather.condition)' (\(weather.displayTemperature)).
-        The response MUST be a valid JSON object with the following structure:
+        사용자의 현재 상태:
+        - 날씨: \(weather.localizedCondition), \(weather.displayTemperature)
+        - 기분: \(emotion.rawValue)
+        
+        위 조건에 맞는 활동 3개를 추천해주세요.
+        
+        응답은 반드시 다음 JSON 형식으로만 작성하세요:
         {
             "activities": [
                 {
-                    "title": "Activity Title (in Korean)",
-                    "description": "Short description (in Korean)",
-                    "tags": ["tag1", "tag2"]
+                    "title": "활동 제목 (한글)",
+                    "description": "활동 설명 (한글, 1-2문장)",
+                    "tags": ["태그1", "태그2"]
                 }
             ]
         }
-        Do not include any markdown formatting (like ```json). Just the raw JSON.
+        
+        추가 설명 없이 JSON만 출력하세요.
         """
         
         // 3. 요청 바디 구성
@@ -53,9 +62,6 @@ class GeminiService {
                         ["text": prompt]
                     ]
                 ]
-            ],
-            "generationConfig": [
-                "response_mime_type": "application/json" // JSON 모드 강제
             ]
         ]
         
@@ -67,24 +73,49 @@ class GeminiService {
         // 4. API 호출
         let (data, response) = try await URLSession.shared.data(for: request)
         
-        guard let httpResponse = response as? HTTPURLResponse, (200...299).contains(httpResponse.statusCode) else {
+        guard let httpResponse = response as? HTTPURLResponse else {
+            print("❌ HTTP 응답 변환 실패")
+            throw URLError(.badServerResponse)
+        }
+        
+        print("📡 Gemini HTTP 상태: \(httpResponse.statusCode)")
+        
+        guard (200...299).contains(httpResponse.statusCode) else {
+            let errorText = String(data: data, encoding: .utf8) ?? "알 수 없는 오류"
+            print("❌ Gemini API 에러: \(errorText)")
             throw URLError(.badServerResponse)
         }
         
         // 5. 응답 파싱
-        // Gemini API 응답 구조 파싱
         let geminiResponse = try JSONDecoder().decode(GeminiContentResponse.self, from: data)
         
         guard let jsonText = geminiResponse.candidates.first?.content.parts.first?.text else {
+            print("❌ JSON 텍스트 추출 실패")
             throw URLError(.cannotParseResponse)
         }
         
-        // 텍스트로 된 JSON을 실제 데이터 모델로 파싱
-        guard let jsonData = jsonText.data(using: .utf8) else {
+        print("📝 Gemini 응답 텍스트:")
+        print(jsonText)
+        
+        // JSON 마크다운 제거 (```json ... ``` 형식 대응)
+        var cleanedJSON = jsonText
+            .replacingOccurrences(of: "```json", with: "")
+            .replacingOccurrences(of: "```", with: "")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        
+        guard let jsonData = cleanedJSON.data(using: .utf8) else {
+            print("❌ UTF-8 변환 실패")
             throw URLError(.cannotDecodeContentData)
         }
         
-        let activityResponse = try JSONDecoder().decode(GeminiActivityResponse.self, from: jsonData)
-        return activityResponse.activities
+        do {
+            let activityResponse = try JSONDecoder().decode(GeminiActivityResponse.self, from: jsonData)
+            print("✅ Gemini 추천 성공: \(activityResponse.activities.count)개")
+            return activityResponse.activities
+        } catch {
+            print("❌ JSON 디코딩 실패: \(error)")
+            print("   원본 JSON: \(cleanedJSON)")
+            throw error
+        }
     }
 }

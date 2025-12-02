@@ -17,6 +17,26 @@ struct Activity: Identifiable, Codable, Equatable {
         self.tags = tags
     }
     
+    // MARK: - Codable
+    enum CodingKeys: String, CodingKey {
+        case title, description, tags
+    }
+    
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.id = UUID() // 디코딩 시 자동 생성
+        self.title = try container.decode(String.self, forKey: .title)
+        self.description = try container.decode(String.self, forKey: .description)
+        self.tags = try container.decode([String].self, forKey: .tags)
+    }
+    
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(title, forKey: .title)
+        try container.encode(description, forKey: .description)
+        try container.encode(tags, forKey: .tags)
+    }
+    
     // MARK: - Helper Properties
     
     /// 태그를 하나의 문자열로 결합 (예: "#실내 #휴식")
