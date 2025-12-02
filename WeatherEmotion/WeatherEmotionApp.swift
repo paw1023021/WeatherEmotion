@@ -1,10 +1,3 @@
-//
-//  WeatherEmotionApp.swift
-//  WeatherEmotion
-//
-//  Created by dsu_student on 11/18/25.
-//
-
 import SwiftUI
 
 @main
