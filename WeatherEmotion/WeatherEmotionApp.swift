@@ -7,7 +7,7 @@ struct WeatherEmotionApp: App {
     
     var body: some Scene {
         WindowGroup {
-            HomeView()
+            MainTabView()
                 .environment(\.managedObjectContext, persistenceController.context)
         }
     }

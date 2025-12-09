@@ -22,10 +22,11 @@ struct ActivityRecommendationView: View {
                 VStack {
                     if viewModel.isLoading {
                         loadingView
+                    } else if !viewModel.recommendations.isEmpty {
+                        // 데이터가 있으면 (기본 추천 포함) 리스트 표시
+                        activityListView
                     } else if let error = viewModel.errorMessage {
                         errorView(message: error)
-                    } else {
-                        activityListView
                     }
                 }
             }
@@ -97,7 +98,19 @@ struct ActivityRecommendationView: View {
                 .background(Color.white)
                 .cornerRadius(15)
                 .padding(.horizontal)
+                .padding(.horizontal)
                 .padding(.top)
+                
+                // 에러 메시지 (기본 추천 사용 시)
+                if let error = viewModel.errorMessage {
+                    HStack {
+                        Image(systemName: "exclamationmark.circle")
+                        Text(error)
+                            .font(.caption)
+                    }
+                    .foregroundColor(.orange)
+                    .padding(.horizontal)
+                }
                 
                 Text("이런 활동은 어떠세요?")
                     .font(.title2)
@@ -139,8 +152,8 @@ struct ActivityCard: View {
                 Text(activity.description)
                     .font(.body)
                     .foregroundColor(.secondary)
-                    .lineLimit(2)
                     .multilineTextAlignment(.leading)
+                    .fixedSize(horizontal: false, vertical: true)
                 
                 // 태그
                 ScrollView(.horizontal, showsIndicators: false) {

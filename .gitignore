@@ -1,0 +1,31 @@
+# Xcode
+.DS_Store
+*/.DS_Store
+*.swp
+*~.nib
+*.mode1v3
+*.mode2v3
+*.perspectivev3
+*.outhermode
+*.pbs
+xcuserdata/
+DerivedData/
+*.moved-aside
+*.xccheckout
+*.xcworkspace
+!default.xcworkspace
+
+# Build generated
+build/
+DerivedData/
+*.hmap
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# API Key Protection
+WeatherEmotion/Services/GeminiService.swift
+WeatherEmotion/Services/WeatherService.swift
+
+# Swift Package Manager
+.swiftpm/xcode/

@@ -11,8 +11,8 @@ import Foundation
 /// Google Gemini API를 사용하여 활동 추천을 생성하는 서비스
 class GeminiService {
     // MARK: - Properties
-    private let apiKey = "AIzaSyCvOxEnz9ca6mkZHWPs9dMFGBsFMUUuS4U"
-    private let modelName = "gemini-2.5-flash"
+    private let apiKey = "AIzaSyCco4pXym85HvzrNjnQF-d_FWQ8RsAu8Xc"
+    private let modelName = "gemini-2.5-flash-lite"
     
     // MARK: - Public Methods
     
@@ -36,17 +36,26 @@ class GeminiService {
         let prompt = """
         사용자의 현재 상태:
         - 날씨: \(weather.localizedCondition), \(weather.displayTemperature)
-        - 기분: \(emotion.rawValue)
+        - 감정 상태: \(emotion.rawValue) (\(emotion.englishDescription))
         
-        위 조건에 맞는 활동 3개를 추천해주세요.
+        위 날씨와 감정의 조합에 가장 잘 어울리는 활동 3가지를 추천해주세요.
+        
+        [요구사항]
+        1. **감정에 따른 활동 유형을 확실히 구분해주세요:**
+           - **기분이 좋을 때 (Good, Happy):** 에너지를 쓰는 활동, **운동이나 스포츠**, 산책, 새로운 도전 등 **활기차고 동적인 활동**
+           - **기분이 나쁠 때 (Bad, Sad, Tired):** 휴식, 명상, 따뜻한 차 마시기, 힐링 영화 보기 등 **정적인 활동 및 위로**
+           - **보통일 때 (Neutral):** 가벼운 취미, 정리 등 **생산적이거나 소소한 활동**
+           
+        2. 날씨가 좋지 않다면(비, 눈, 미세먼지 등) 실내 활동을 우선시해주세요.
+        3. 제목은 간결하게(15자 이내), 설명은 1-2문장으로 구체적인 방법을 포함해주세요.
         
         응답은 반드시 다음 JSON 형식으로만 작성하세요:
         {
             "activities": [
                 {
                     "title": "활동 제목 (한글)",
-                    "description": "활동 설명 (한글, 1-2문장)",
-                    "tags": ["태그1", "태그2"]
+                    "description": "활동 설명 (한글, 2문장 내외)",
+                    "tags": ["태그1", "태그2", "태그3"]
                 }
             ]
         }

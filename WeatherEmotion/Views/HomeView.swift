@@ -22,23 +22,25 @@ struct HomeView: View {
                         startPoint: .top,
                         endPoint: .bottom
                     )
-                    .ignoresSafeArea()
+                    .ignoresSafeArea(edges: .top)
                 } else {
-                    Color.gray.opacity(0.1).ignoresSafeArea()
+                    Color.gray.opacity(0.1).ignoresSafeArea(edges: .top)
                 }
                 
-                VStack(spacing: 0) {
-                    // 1. 상단: 날씨 정보 영역 (40%)
-                    weatherSection
-                        .frame(height: UIScreen.main.bounds.height * 0.4)
-                    
-                    // 2. 하단: 감정 선택 영역 (60%)
-                    emotionSection
-                        .background(Color.white)
-                        .cornerRadius(30, corners: [.topLeft, .topRight])
-                        .shadow(color: .black.opacity(0.05), radius: 10, x: 0, y: -5)
+                GeometryReader { geometry in
+                    VStack(spacing: 0) {
+                        // 1. 상단: 날씨 정보 영역 (40%)
+                        weatherSection
+                            .frame(height: geometry.size.height * 0.4)
+                        
+                        // 2. 하단: 감정 선택 영역 (60%)
+                        emotionSection
+                            .frame(height: geometry.size.height * 0.6)
+                            .background(Color.white)
+                            .cornerRadius(30, corners: [.topLeft, .topRight])
+                            .shadow(color: .black.opacity(0.05), radius: 10, x: 0, y: -5)
+                    }
                 }
-                .edgesIgnoringSafeArea(.bottom)
             }
             .onAppear {
                 print("🏠 HomeView appeared")

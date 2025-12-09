@@ -37,8 +37,8 @@ class ActivityViewModel: ObservableObject {
             self.recommendations = activities
         } catch {
             print("❌ 추천 실패: \(error.localizedDescription)")
-            self.errorMessage = "활동 추천을 불러오는데 실패했습니다. 기본 추천을 표시합니다."
-            // 실패 시 기본 추천 목록 사용
+            self.errorMessage = "AI 연결이 원활하지 않아 기본 추천을 표시합니다."
+            // 모든 에러 상황에서 기본 추천 사용
             self.recommendations = Activity.defaults
         }
         
